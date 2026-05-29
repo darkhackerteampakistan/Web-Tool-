@@ -7,11 +7,13 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.prompt import Prompt
+from rich import box
 from pyfiglet import Figlet
 import os
 import time
 
 console = Console()
+
 
 # ==========================
 # Banner
@@ -30,7 +32,7 @@ def banner():
             "[yellow]Tool Name : Website Info Tool[/yellow]\n"
             "[cyan]Version : v2.1[/cyan]\n"
             "[magenta]Features : IP | DNS | CDN | STATUS | PORTS[/magenta]",
-            title="[bold red]WELCOME[/bold red]
+            title="[bold red]WELCOME[/bold red]"
         )
     )
 
@@ -73,7 +75,6 @@ def reverse_dns(ip):
 # ==========================
 def dns_records(domain):
     data = {}
-
     record_types = ["A", "AAAA", "MX", "NS"]
 
     for record in record_types:
@@ -160,21 +161,28 @@ def save_result(data):
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
-    console.print(f"[green]Saved Successfully:[/green] {filename}")
+    console.print(
+        f"[bold green]Saved Successfully:[/bold green] {filename}"
+    )
 
 
 # ==========================
 # Scan Website
 # ==========================
 def scan():
-    website = Prompt.ask("[bold yellow]Enter Website URL")
+    website = Prompt.ask(
+        "[bold yellow]Enter Website URL"
+    )
 
     domain = extract_domain(website)
 
     if not website.startswith(("http://", "https://")):
         website = "https://" + website
 
-    console.print("\n[cyan]Scanning Website...[/cyan]")
+    console.print(
+        "\n[cyan]Scanning Website...[/cyan]"
+    )
+
     time.sleep(1)
 
     ips = get_ips(domain)
@@ -184,32 +192,47 @@ def scan():
     headers = {}
 
     try:
-        headers = requests.get(website, timeout=10).headers
+        headers = requests.get(
+            website,
+            timeout=10
+        ).headers
     except:
         pass
 
     cdn = detect_cdn(headers)
 
-    table = Table(title="Website Information")
+    table = Table(
+        title="Website Information",
+        box=box.ROUNDED
+    )
 
-    table.add_column("Type", style="cyan")
-    table.add_column("Result", style="green")
+    table.add_column(
+        "Type",
+        style="cyan",
+        no_wrap=True
+    )
+
+    table.add_column(
+        "Result",
+        style="green"
+    )
 
     table.add_row("Domain", domain)
     table.add_row("Website Status", status)
     table.add_row("CDN", cdn)
-    table.add_row("IP Addresses", "\n".join(ips))
+    table.add_row(
+        "IP Addresses",
+        "\n".join(ips)
+    )
 
     for ip in ips:
         if "Error" not in ip:
 
-            # Reverse DNS
             table.add_row(
                 f"Reverse DNS ({ip})",
                 reverse_dns(ip)
             )
 
-            # Open Ports
             ports = check_common_ports(ip)
 
             if ports:
@@ -255,18 +278,24 @@ def menu():
         banner()
 
         console.print("""
-[1] Scan Website
-[2] Exit
+[bold cyan][1][/bold cyan] Scan Website
+[bold red][2][/bold red] Exit
 """)
 
-        choice = Prompt.ask("Select Option")
+        choice = Prompt.ask(
+            "Select Option"
+        )
 
         if choice == "1":
             scan()
-            input("\nPress Enter To Continue...")
+            input(
+                "\nPress Enter To Continue..."
+            )
 
         elif choice == "2":
-            console.print("[red]Goodbye![/red]")
+            console.print(
+                "[bold red]Goodbye![/bold red]"
+            )
             break
 
         else:
